@@ -33,7 +33,7 @@ a few percent:
 - [htop-dev/htop#1619](https://github.com/htop-dev/htop/issues/1619) -- process CPU time still not updated correctly on macOS
 
 Apple's built-in `top` is accurate but monochrome, has no per-core meters, and
-truncates command names to ~16 characters (`Google Chrome He`). ctop gives you
+truncates command names to ~16 characters (`Google Chrome He`). `ctop` gives you
 both: htop's look (per-core bars, memory/swap bars, colored process table) with
 `top`-accurate numbers and full command names.
 
@@ -68,17 +68,23 @@ ctop
 |-----|--------|
 | `c` | Sort by CPU% (default) |
 | `m` | Sort by memory (RSS) |
+| `↑` / `↓` | Move the row highlight up/down |
 | `q` | Quit |
 
 You can also click the `CPU%` / `MEM` column headers to switch the sort. The
 `▼` caret marks the active sort column. Updates once per second.
 
+Click a process row to highlight it. The highlight follows the *process*, not
+the screen position -- as the row jumps around between refreshes it stays
+highlighted, so you can track one process while scanning. The arrow keys move
+the highlight to the row above/below; clicking the highlighted row clears it.
+
 CPU% is Irix-mode like Apple's `top`: one fully-busy core = 100%, so
 multithreaded processes can exceed 100%. Bars and CPU% cells are colored green
 below 50%, yellow from 50-80%, red above 80%.
 
-ctop itself is light: measured at ~3% of one core (so ~0.4% of an 8-core
-machine) and ~17MB of RAM while running -- the same ballpark as htop or
+ctop itself is light: measured at ~3.5% of one core (so ~0.4% of an 8-core
+machine) and ~15MB of RAM while running -- the same ballpark as htop or
 Apple's `top`, which do the same once-per-second sampling of every process.
 
 ## Troubleshooting
