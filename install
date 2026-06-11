@@ -1,0 +1,63 @@
+#!/bin/sh
+# Install ctop: create a venv, install dependencies, smoke-test a rendered
+# frame, then symlink `ctop` into your PATH.
+set -e
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+BIN_DIR="${CTOP_BIN_DIR:-$HOME/.local/bin}"
+
+PYTHON=""
+for candidate in python3.13 python3.12 python3.11 python3; do
+    if command -v "$candidate" > /dev/null 2>&1; then
+        PYTHON="$(command -v "$candidate")"
+        break
+    fi
+done
+if [ -z "$PYTHON" ]; then
+    echo "error: no python3 found -- install one (e.g. brew install python@3.13)" >&2
+    exit 1
+fi
+echo "Using $PYTHON ($("$PYTHON" --version))"
+
+echo "Creating venv and installing psutil + rich..."
+"$PYTHON" -m venv "$DIR/.venv"
+"$DIR/.venv/bin/pip" install --quiet --upgrade pip psutil rich
+
+# Copy (not symlink) the real interpreter binary as .venv/bin/ctop so macOS
+# reports the process name as "ctop" (iTerm tab titles, Activity Monitor).
+# A symlink doesn't work: the kernel resolves it and reports "Python". The
+# Homebrew bin/python3 is itself a launcher that re-execs the framework
+# binary, so we copy the framework binary it points at.
+REAL_PY="$(readlink -f "$DIR/.venv/bin/python")"
+FRAMEWORK_PY="$("$DIR/.venv/bin/python" -c 'import sys; print(sys.base_exec_prefix)')/Resources/Python.app/Contents/MacOS/Python"
+if [ -f "$FRAMEWORK_PY" ]; then
+    cp -f "$FRAMEWORK_PY" "$DIR/.venv/bin/ctop"
+else
+    cp -f "$REAL_PY" "$DIR/.venv/bin/ctop"
+fi
+
+echo "Smoke test: rendering one frame..."
+cd "$DIR"
+"$DIR/.venv/bin/ctop" - <<'EOF'
+import sys
+import time
+sys.path.insert(0, "")
+import ctop
+from rich.console import Console
+
+ctop.prime_cpu_samplers()
+time.sleep(1)
+snap = ctop.take_snapshot()
+assert snap["cores"] and snap["tasks"] > 10, "snapshot looks empty"
+console = Console(width=80, height=24, force_terminal=True)
+console.print(ctop.render(snap, console))
+EOF
+echo "Smoke test passed."
+
+mkdir -p "$BIN_DIR"
+ln -sf "$DIR/ctop" "$BIN_DIR/ctop"
+echo "Linked $BIN_DIR/ctop -> $DIR/ctop"
+case ":$PATH:" in
+    *":$BIN_DIR:"*) echo "Done. Run: ctop" ;;
+    *) echo "Done, but $BIN_DIR is not in your PATH -- add it, set CTOP_BIN_DIR to a dir that is, or run $DIR/ctop directly." ;;
+esac

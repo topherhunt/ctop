@@ -1,0 +1,11 @@
+#!/bin/sh
+# Run ctop from wherever the repo lives (works through a PATH symlink).
+SELF="$(readlink -f "$0")"
+DIR="$(dirname "$SELF")"
+PY="$DIR/.venv/bin/ctop"
+[ -x "$PY" ] || PY="$DIR/.venv/bin/python"
+if [ ! -x "$PY" ]; then
+    echo "ctop: no venv found -- run $DIR/install first" >&2
+    exit 1
+fi
+exec "$PY" "$DIR/ctop.py" "$@"
