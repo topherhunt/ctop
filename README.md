@@ -77,6 +77,16 @@ CPU% is Irix-mode like Apple's `top`: one fully-busy core = 100%, so
 multithreaded processes can exceed 100%. Bars and CPU% cells are colored green
 below 50%, yellow from 50-80%, red above 80%.
 
+ctop itself is light: measured at ~3% of one core (so ~0.4% of an 8-core
+machine) and ~17MB of RAM while running -- the same ballpark as htop or
+Apple's `top`, which do the same once-per-second sampling of every process.
+
+## Troubleshooting
+
+If ctop stops launching after a `brew upgrade` of Python, rerun `./install` --
+it rebuilds the venv against the new interpreter. (The wrapper falls back
+gracefully where it can, so this should be rare.)
+
 ## Uninstall
 
 ```sh
