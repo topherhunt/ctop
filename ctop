@@ -2,12 +2,7 @@
 # Run ctop from wherever the repo lives (works through a PATH symlink).
 SELF="$(readlink -f "$0")"
 DIR="$(dirname "$SELF")"
-# Prefer the interpreter copy named "ctop" (makes the macOS process name
-# "ctop" in tab titles / Activity Monitor), but it links Homebrew's versioned
-# Cellar path and dies after a `brew upgrade python` -- probe it and fall
-# back to the venv's regular python if it no longer runs.
-PY="$DIR/.venv/bin/ctop"
-[ -x "$PY" ] && "$PY" -c "" 2> /dev/null || PY="$DIR/.venv/bin/python"
+PY="$DIR/.venv/bin/python"
 if [ ! -x "$PY" ]; then
     echo "ctop: no venv found -- run $DIR/install first" >&2
     exit 1

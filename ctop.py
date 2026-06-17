@@ -166,7 +166,7 @@ def make_table(procs, sort_key, nrows):
     rows = sorted(procs, key=lambda r: (-r[key], r["pid"]))[:nrows]
     state["visible"] = [r["pid"] for r in rows]
     table = Table(box=None, expand=True, pad_edge=False, padding=(0, 1),
-                  header_style="bold black on green")
+                  header_style="bold white on #24486d")
     table.add_column("PID", justify="right", width=7, no_wrap=True)
     table.add_column("COMMAND", ratio=1, no_wrap=True, overflow="ellipsis")
     table.add_column("CPU%" + (SORT_CARET if key == "cpu" else ""),
